@@ -3,6 +3,7 @@ import axios from "axios";
 const axiosInstance = axios.create({
   baseURL: "http://localhost:3000/api/v1",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true, 
 });
 
 // Attach token to every request automatically
@@ -18,10 +19,12 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/signin";
-    }
+  if (error.response?.status === 401) {
+  localStorage.removeItem("token");
+  if (!window.location.pathname.includes("/signin")) {
+    window.location.href = "/signin";
+  }
+}
     return Promise.reject(error);
   }
 );

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react"
 import { Plus, Share2 } from "lucide-react"
 import axios from "axios"
+import axiosInstance from "../api/axiosInstance"
 import Sidebar from "../components/Sidebar"
 import CreateContent from "../components/CreateContent"
 import Button from "../components/button"
 import Card from "../components/Card"
-import { BACKEND_URL } from "../Config/config"
 import { Logout } from "../Icons/Logout"
 import { useNavigate } from "react-router"
 import ShareContent from "../components/ShareContent"
@@ -35,10 +35,8 @@ const DashBoard = () => {
     const fetchContent = async () => {
         try {
             setLoading(true)
-            const response = await axios.get(`${BACKEND_URL}/api/v1/content`, {
-                withCredentials: true
-            })
-            setContents(response.data.content)
+            const response = await axiosInstance.get("/content")
+            setContents(response.data)
             setError("")
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
@@ -56,11 +54,8 @@ const DashBoard = () => {
     }
 
     const handleLogout = async () => {
-        await axios.post(
-            `${BACKEND_URL}/api/v1/logout`,
-            {},
-            { withCredentials: true }
-        )
+        await axiosInstance.post("/logout", {})
+        localStorage.removeItem("token")
         setTimeout(() => {
             navigate('/')
         }, 1000)

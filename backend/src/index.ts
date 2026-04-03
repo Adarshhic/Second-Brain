@@ -2,15 +2,24 @@ import express from "express";
 import { random } from "./utils";
 import jwt from "jsonwebtoken";
 import { ContentModel, LinkModel, UserModel } from "./db";
-import { JWT_SECRET } from "./config";
+import { config } from "./config";
 import { authMiddleware } from "./middleware";
+import { connectDB } from "./db"; 
 import cors from "cors";
 import zod from "zod";
 import bcrypt from "bcrypt";
 
 const app = express();
 app.use(express.json());
-app.use(cors()); 
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true
+}));
+connectDB().then(() => {
+  app.listen(3000, () => {
+    console.log("Server started on port 3000");
+  });
+});
 
 app.post("/api/v1/signup", async (req, res) => {
    const requireBody = zod.object({
@@ -33,7 +42,7 @@ app.post("/api/v1/signup", async (req, res) => {
     const hashpassword = await bcrypt.hash(password, 10);
     try {
       const user = await UserModel.create({ username: email, password: hashpassword });
-      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+      const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: "1h" });
       return res.json({ token }); 
     }
     catch (error) {
@@ -41,7 +50,7 @@ app.post("/api/v1/signup", async (req, res) => {
     }
 });
 
-app.post("/api/v1/signup", async (req, res) => {
+app.post("/api/v1/signin", async (req, res) => {
    const requireBody = zod.object({
         email: zod.string().email().min(5),
         password: zod.string().min(5), 
@@ -63,7 +72,7 @@ app.post("/api/v1/signup", async (req, res) => {
     }
      const existingUser = await UserModel.findOne({ user, password });
     if (existingUser) {
-        const token = jwt.sign({ id: existingUser._id }, JWT_SECRET);
+        const token = jwt.sign({ id: existingUser._id }, config.JWT_SECRET);
         res.json({ token });
     } else {
         res.status(403).json({ message: "Incorrect credentials" });

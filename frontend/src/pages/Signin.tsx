@@ -13,10 +13,8 @@ const Signin = () => {
     const handleSignin = async () => {
         try {
             setError("")
-            await axios.post(`${BACKEND_URL}/api/v1/signin`, {
-                email,
-                password
-            }, { withCredentials: true })
+          const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, { email, password })
+          localStorage.setItem("token", response.data.token)  
             setEmail("")
             setPassword("")
             navigate("/dashboard")
