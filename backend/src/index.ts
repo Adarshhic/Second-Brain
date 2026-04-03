@@ -1,11 +1,146 @@
 import express from "express";
+import { random } from "./utils";
+import jwt from "jsonwebtoken";
+import { ContentModel, LinkModel, UserModel } from "./db";
+import { JWT_SECRET } from "./config";
+import { authMiddleware } from "./middleware";
+import cors from "cors";
+import zod from "zod";
+import bcrypt from "bcrypt";
 
 const app = express();
+app.use(express.json());
+app.use(cors()); 
 
-app.get("/", (req, res) => {
-  res.send("Backend running 🚀");
+app.post("/api/v1/signup", async (req, res) => {
+   const requireBody = zod.object({
+        email: zod.string().email().min(5),
+        password: zod.string().min(5), 
+        firstName: zod.string().min(3),
+        lastName: zod.string().min(3),
+    });
+   const parseDataWithSuccess = requireBody.safeParse(req.body);
+     if (!parseDataWithSuccess.success) {
+        return res.json({
+            message: "Incorrect data format",
+            error: parseDataWithSuccess.error, 
+        });
+    }
+     const email = req.body.email;
+    const password = req.body.password;
+    const name = req.body.name;
+
+    const hashpassword = await bcrypt.hash(password, 10);
+    try {
+      const user = await UserModel.create({ username: email, password: hashpassword });
+      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+      return res.json({ token }); 
+    }
+    catch (error) {
+        return res.json({ message: "User already exists" });
+    }
 });
 
-app.listen(5000, () => {
-  console.log("Server started on port 5000");
+app.post("/api/v1/signup", async (req, res) => {
+   const requireBody = zod.object({
+        email: zod.string().email().min(5),
+        password: zod.string().min(5), 
+    });
+   const parseDataWithSuccess = requireBody.safeParse(req.body);
+     if (!parseDataWithSuccess.success) {
+        return res.json({
+            message: "Incorrect data format",
+            error: parseDataWithSuccess.error, 
+        });
+    }
+     const email = req.body.email;
+    const password = req.body.password;
+
+
+     const user = await UserModel.findOne({ email: email });
+    if (!user) {
+        return res.json({ message: "User not found" });
+    }
+     const existingUser = await UserModel.findOne({ user, password });
+    if (existingUser) {
+        const token = jwt.sign({ id: existingUser._id }, JWT_SECRET);
+        res.json({ token });
+    } else {
+        res.status(403).json({ message: "Incorrect credentials" });
+    }
+
+  });
+
+  app.post("/api/v1/content", authMiddleware, async (req, res) => {
+    const { link, type, title  ,} = req.body;
+    await ContentModel.create({
+        link,
+        type,
+        title,
+        userId: req.userId,
+        tags: [] 
+    });
+
+    res.json({ message: "Content added" }); 
+});
+  
+app.get("/api/v1/content", authMiddleware, async (req, res) => {
+    
+    const userId = req.userId;  
+    const content = await ContentModel.find({ userId: userId }).populate("userId", "username");
+    res.json(content); 
+});
+
+app.delete("/api/v1/content", authMiddleware, async (req, res) => {
+    const contentId = req.body.contentId;
+
+    
+    await ContentModel.deleteMany({ contentId, userId: req.userId });
+    res.json({ message: "Deleted" }); 
+
+});
+
+app.post("/api/v1/brain/share", authMiddleware, async (req, res) => {
+    const { share } = req.body;
+    if (share) {
+       
+        const existingLink = await LinkModel.findOne({ userId: req.userId });
+        if (existingLink) {
+            res.json({ hash: existingLink.hash }); 
+            return;
+        }
+
+        const hash = random(10);
+        await LinkModel.create({ userId: req.userId, hash });
+        res.json({ hash }); 
+    } else {
+
+        await LinkModel.deleteOne({ userId: req.userId });
+        res.json({ message: "Removed link" });
+    }
+});
+
+app.get("/api/v1/brain/:shareLink", async (req, res) => {
+    const hash = req.params.shareLink;
+    const link = await LinkModel.findOne({ hash });
+    if (!link) {
+        res.status(404).json({ message: "Invalid share link" }); 
+        return;
+    }
+    const content = await ContentModel.find({ userId: link.userId });
+    const user = await UserModel.findOne({ _id: link.userId });
+
+    if (!user) {
+        res.status(404).json({ message: "User not found" }); 
+        return;
+    }
+
+    res.json({
+        username: user.username,
+        content
+    }); 
+});
+
+app.listen(3000, () => {
+  console.log("Server started on port 3000");
 });
