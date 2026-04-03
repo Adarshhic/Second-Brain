@@ -1,10 +1,20 @@
-import {Button} from "../src/components/ui/button";
-function App(){
+import { Route, Routes } from "react-router"
+import Signin from "../src/pages/Signin"
+import Signup from "../src/pages/Signup"
+import DashBoard from "../src/pages/Dashboard"
+
+const App = () => {
   return (
-    <div >
-    <Button variant="primary" text = "Add Content"></Button>
-    <Button variant="secondary" text = "Share"></Button>
-    </div>
+    <>
+      <Routes>
+        <Route path="/" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/dashboard" element={<DashBoard />} />
+     
+      </Routes>
+    </>
   )
 }
-export default App;
+
+export default App
