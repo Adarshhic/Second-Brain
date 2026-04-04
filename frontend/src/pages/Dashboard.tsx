@@ -53,12 +53,11 @@ const DashBoard = () => {
         setContents(prev => prev.filter(item => item._id !== id))
     }
 
-    const handleLogout = async () => {
-        await axiosInstance.post("/logout", {})
+    const handleLogout = () => {
+        // FIX: JWT is stateless — no backend logout route exists or is needed.
+        // Just clear the token from localStorage and redirect to home.
         localStorage.removeItem("token")
-        setTimeout(() => {
-            navigate('/')
-        }, 1000)
+        navigate("/")
     }
 
     useEffect(() => {
