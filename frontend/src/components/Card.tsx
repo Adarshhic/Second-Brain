@@ -1,8 +1,7 @@
-import axios from "axios"
 import { Trash2 } from "lucide-react"
-import { BACKEND_URL } from "../../src/Config/config"
-import XIcon from "../Icons/XIcon"
+import axiosInstance from "../api/axiosInstance" 
 import YouTubeIcon from "../Icons/Youtube"
+
 
 interface CardProps {
   id: string
@@ -17,9 +16,8 @@ interface CardProps {
 const Card = ({ id, title, type, link, tags, createdAt, onDelete }: CardProps) => {
 
   const handleDelete = async () => {
-    await axios.delete(`${BACKEND_URL}/api/v1/content/${id}`, {
-      withCredentials: true,
-    })
+   
+    await axiosInstance.delete(`/content`, { data: { contentId: id } })
     onDelete?.(id)
   }
 
@@ -94,9 +92,3 @@ const Card = ({ id, title, type, link, tags, createdAt, onDelete }: CardProps) =
 }
 
 export default Card
-
-interface CardProps {
-    title: string; 
-    link: string; 
-    type: "twitter" | "youtube";
-}

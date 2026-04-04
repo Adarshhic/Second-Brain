@@ -1,7 +1,7 @@
 import { useState } from "react"
 import axios from "axios"
+import axiosInstance from "../api/axiosInstance"  
 import { CrossIcon } from "../Icons/CrossIcon"
-import { BACKEND_URL } from "../Config/config"
 import Button from "../components/button"
 import { Copy, Check } from "lucide-react"
 
@@ -20,11 +20,7 @@ const ShareContent = ({ shareBoxOpen, setShareBoxOpen }: ShareContentProps) => {
     try {
       setLoading(true)
       setError("")
-      const res = await axios.post(
-        `${BACKEND_URL}/api/v1/brain/share`,
-        { share: true },
-        { withCredentials: true }
-      )
+      const res = await axiosInstance.post("/brain/share", { share: true })
       const hash = res.data.hash
       setShareLink(`${window.location.origin}/sharedDashboard/${hash}`)
     } catch (err: unknown) {

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import axios from "axios"
+import axiosInstance from "../api/axiosInstance"   
 import { CrossIcon } from "../Icons/CrossIcon"
-import { BACKEND_URL } from "../Config/config"
 import Button from "../components/button"
 
 interface CreateContentProps {
@@ -42,12 +42,8 @@ const CreateContent = ({
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean)
+      await axiosInstance.post("/content", { title, link, type, tags: tagsArray })
 
-      await axios.post(
-        `${BACKEND_URL}/api/v1/content`,
-        { title, link, type, tags: tagsArray },
-        { withCredentials: true }
-      )
       setTitle("")
       setLink("")
       setType("")

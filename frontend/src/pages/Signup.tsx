@@ -5,34 +5,31 @@ import axios from "axios"
 import { BACKEND_URL } from "../Config/config"
 
 const Signup = () => {
-    const [username, setUsername] = useState("")
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [error, setError] = useState("")
+    const [firstName, setFirstName] = useState("")
+    const [lastName, setLastName]   = useState("")
+    const [email, setEmail]         = useState("")
+    const [password, setPassword]   = useState("")
+    const [error, setError]         = useState("")
     const navigate = useNavigate()
 
     const handleSubmit = async () => {
         setError("")
         try {
-            const response = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
-                username,
+            await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+                firstName,
+                lastName,
                 email,
-                password
+                password,
             })
-            alert(response?.data?.message)
-            navigate('/signin')
-            setUsername("")
+            navigate("/signin")
+            setFirstName("")
+            setLastName("")
             setEmail("")
             setPassword("")
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 const serverMessage = error?.response?.data?.message
-                if (serverMessage && typeof serverMessage === "object") {
-                    const firstFieldErrors = Object.values(serverMessage)[0] as string[]
-                    setError(firstFieldErrors[0])
-                } else {
-                    setError("Something went wrong. Please try again.")
-                }
+                setError(serverMessage || "Something went wrong. Please try again.")
             } else {
                 setError("Something went wrong. Please try again.")
             }
@@ -48,21 +45,36 @@ const Signup = () => {
             </div>
 
             <div className="text-[15px] mb-5">
-                Signup our website and just start <br />
-                storing your thoughts in second brain.
+                Signup and start storing <br />
+                your thoughts in second brain.
             </div>
 
             <div className="flex flex-col gap-5 w-82.5">
-                <div className="flex flex-col group">
-                    <label htmlFor="Full-name" className="text-[14px] group-focus-within:text-blue-500">Full name</label>
-                    <input
-                        type="text"
-                        placeholder="Enter your full name"
-                        name="Full-name"
-                        className="placeholder:text-[13px] text-[14px] py-0.5 px-0.5 outline-none border-b-2 border-slate-300 group-focus-within:text-blue-500 group-focus-within:border-blue-400"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
+
+                {/* FIX 1: Split "Full name" into firstName + lastName */}
+                <div className="flex gap-3">
+                    <div className="flex flex-col group flex-1">
+                        <label htmlFor="firstName" className="text-[14px] group-focus-within:text-blue-500">First name</label>
+                        <input
+                            type="text"
+                            placeholder="First name"
+                            name="firstName"
+                            className="placeholder:text-[13px] text-[14px] py-0.5 px-0.5 outline-none border-b-2 border-slate-300 group-focus-within:text-blue-500 group-focus-within:border-blue-400"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex flex-col group flex-1">
+                        <label htmlFor="lastName" className="text-[14px] group-focus-within:text-blue-500">Last name</label>
+                        <input
+                            type="text"
+                            placeholder="Last name"
+                            name="lastName"
+                            className="placeholder:text-[13px] text-[14px] py-0.5 px-0.5 outline-none border-b-2 border-slate-300 group-focus-within:text-blue-500 group-focus-within:border-blue-400"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex flex-col group">
