@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react"
 import axiosInstance from "../api/axiosInstance" 
 import YouTubeIcon from "../Icons/Youtube"
+import XIcon from "../Icons/XIcon"
 
 
 interface CardProps {
